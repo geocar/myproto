@@ -4,7 +4,7 @@
 -include_lib("eunit/include/eunit.hrl").
 -define(DEBUG, fun(A,B) -> ?debugFmt(A,B) end).
 -else.
--define(DEBUG, fun(_,_) -> ok end).
+-define(DEBUG(_A,_B),ok=ok).
 -endif.
 
 -define(INFO_MSG, error_logger:info_msg).

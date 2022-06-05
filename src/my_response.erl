@@ -35,7 +35,7 @@ ok(Socket) ->
 
 
 error(Reason, Socket) when is_binary(Reason) ->
-    error(1045, Reason, Socket).
+    ?MODULE:error(1045, Reason, Socket).
 
 error(Code, Reason, Socket) when is_integer(Code), is_binary(Reason) ->
     Response = #response{status = ?STATUS_ERR,
@@ -72,7 +72,7 @@ default_reply(#request{info = ?SQL_PARAM(<<"tx_isolation">>, local)},
     },
     {reply, #response{status=?STATUS_OK, info=Info}, State};
 
-default_reply(#request{info = {use, Database}}, Handler, State) ->
+default_reply(#request{command = ?COM_INIT_DB, info = Database}, Handler, State) ->
     {noreply, State1} = Handler:metadata({connect_db, Database}, State),
     {reply,
      #response{status = ?STATUS_OK,
@@ -189,6 +189,10 @@ default_reply(#request{info = #describe{table = #table{name = Table}}},
               Handler, State) ->
     Show = #show{type = fields, from = Table, full = false},
     default_reply(#request{info = Show}, Handler, State);
+
+default_reply(#request{command = ?COM_FIELD_LIST, info = Table} = Req, Handler, State) ->
+    Request = Req#request{info = #show{type = fields, from = Table, full = false}},
+    default_reply(Request, Handler, State);
 
 default_reply(#request{info = #show{type = fields, from = Table, full = Full}},
               Handler, State) ->
